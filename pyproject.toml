@@ -16,6 +16,7 @@ dependencies = [
     "labelme",
     "matplotlib",
     "numpy",
+    "netcdf4",
     "pandas",
     "Pillow",
     "plotly",
