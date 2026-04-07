@@ -42,6 +42,8 @@ def main(
     # run the labelling app
     app.run(force_rebuild_images=False)
 
+    # TODO output current shapes library as csv file
+    
 
 
 if __name__ == "__main__":
