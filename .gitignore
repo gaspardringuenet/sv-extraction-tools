@@ -1,0 +1,26 @@
+# App-generated files (cache folder & output)
+/app_data
+/output
+
+# Private data
+/private
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Pytest-generated files
+.pytest_cache
+.coverage
+/htmlcov
+
+# Other
+.vscode/
+.DS_Store
