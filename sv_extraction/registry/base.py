@@ -13,7 +13,7 @@ from .echotypes import EchotypeRegistry
 from .sql import base as sql
 
 logging.basicConfig(
-    format='REGISTRY %(levelname)s %(asctime)s: %(message)s (Line: %(lineno)d [%(filename)s])',
+    format='%(levelname)s %(asctime)s: %(message)s (Line: %(lineno)d [%(filename)s])',
     datefmt='%H:%M:%S',
     level=logging.INFO
 )

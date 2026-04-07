@@ -32,9 +32,9 @@ def check_no_time_overlap(ds_list: list[xr.Dataset]):
     for (_, end), (start, _) in zip(times[:-1], times[1:]):
         if start <= end:
             raise ValueError("Overlapping time coordinates detected.")
-        
 
-def load_dataset(
+
+def load_dataset_from_dir(
         dir_path:Path,
         chunks:dict | None = None,
         backup_url:str = 'https://www.seanoe.org/data/00602/71379/data/70042.nc',
@@ -116,11 +116,16 @@ def load_dataset_from_files(
 
 
 
-if __name__ == "__main__":
-
-    here = Path(__file__).parent.parent
-    ds = load_dataset(dir_path=here/"data-perso/test/empty")
+def load_dataset(
+    path: Path,
+    chunks: dict | None = None,
+) -> xr.Dataset:
     
-    print(f"Cruise name: {ds.attrs.get('cruise_name')}")
-    print(f"Ping axis EI: {ds.attrs.get('data_ping_axis_interval_value')} x {ds.attrs.get('data_ping_axis_interval_type')}")
-    print(f"Ping axis EI: {ds.attrs.get('data_range_axis_interval_value')} x {ds.attrs.get('data_range_axis_interval_type')}")
+    if path.is_dir():
+        return load_dataset_from_dir(path, chunks)
+    
+    if path.is_file():
+        return xr.open_dataset(path, chunks=chunks)
+    
+    else:
+        raise ValueError(f"Invalid dataset path: {path}")

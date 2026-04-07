@@ -101,7 +101,7 @@ class EcholabelApp:
         """
 
         # Load data, register in db and get id
-        dataset = load_dataset(dir_path=self.config.paths.input, chunks=self.config.loading.chunks)
+        dataset = load_dataset(path=self.config.paths.input, chunks=self.config.loading.chunks)
 
         # Build Image Dataset
         build_images(dataset, self.config, force_rebuild_images)
@@ -150,7 +150,7 @@ def build_app_config(
     loading_config = DataLoadingConfig(chunks=xarray_chunking)
     
     # Load data, register in db and get id
-    dataset = load_dataset(dir_path=paths_config.input, chunks=loading_config.chunks)
+    dataset = load_dataset(path=paths_config.input, chunks=loading_config.chunks)
     ei_id = get_or_register_ei(paths_config.registry, paths_config.root, paths_config.input, dataset)
 
     # Build image data config object
@@ -233,24 +233,30 @@ def run_labelling_session(app_config: EcholabelAppConfig):
 
     ei_info = get_ei_metadata(app_config.paths.registry, app_config.paths.root, app_config.image_data.ei_id)
 
-    print(f"\n==== Echogram labelling session ====\n")
+    #print(f"\n==== Echogram labelling session ====\n")
+    print("Echogram labelling session")
     print(f" - Id:\t\t{app_config.session.session_id}")
     print(f" - Name:\t{app_config.session.libname}")
     print(f" - Cruise:\t{app_config.image_data.cruise_name}")
     print(f" - EI:\t\t{ei_info.get('data_ping_axis_interval_value')} {ei_info.get('data_ping_axis_interval_type')} x {ei_info.get('data_range_axis_interval_value')} {ei_info.get('data_range_axis_interval_type')} (EI id {app_config.image_data.ei_id})")
     print(f" - Images:\t{app_config.image_data.save_dir}")
 
-    print("\nlabelme printed outputs:")
+    log_file = app_config.paths.app_data / "labelme.log"
     
-    subprocess.run([                                        # launch labelme as subprocess
-        "labelme",
-        str(app_config.image_data.save_dir),
-        '--output',
-        str(app_config.json_dir()),
-        '--nodata'                                          # avoids encoding the image in the json file
-    ])
+    with open(log_file, 'w') as log:
+        subprocess.run(
+            [                                        # launch labelme as subprocess
+                "labelme",
+                str(app_config.image_data.save_dir),
+                '--output',
+                str(app_config.json_dir()),
+                #'--nodata'                                          # avoids encoding the image in the json file
+            ],
+            stdout=log,
+            stderr=log
+        )
 
-    print("\n====================================")
+    #print("\n====================================")
 
 
 def get_ei_metadata(db_path: Path, root_path: Path, ei_id: int) -> dict:
