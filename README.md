@@ -55,8 +55,12 @@ Labelling session shapes registry update:
  * 5 new 
  * 0 modified 
  * 0 deleted 
- * Total number of shapes in library (ROI_lib_demo): 5
+ * Total number of shapes in library (ROI_lib_demo): 7
 
 Library synced up: available accross all 1 image datasets related to EI 01
 
 ```
+
+`Labelme` UI example:
+
+![alt text](image.png)
