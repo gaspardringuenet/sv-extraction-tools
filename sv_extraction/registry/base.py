@@ -1,6 +1,5 @@
 import sqlite3
 
-import logging
 from pathlib import Path
 import pandas as pd
 from importlib.resources import files
@@ -12,11 +11,6 @@ from .echotypes import EchotypeRegistry
 
 from .sql import base as sql
 
-logging.basicConfig(
-    format='%(levelname)s %(asctime)s: %(message)s (Line: %(lineno)d [%(filename)s])',
-    datefmt='%H:%M:%S',
-    level=logging.INFO
-)
 
 # ---- Container class for registry ----
 

@@ -1,10 +1,13 @@
 import sqlite3
+import logging
 from pathlib import Path
 import json
 import pandas as pd
 
 from .sql import shapes as sql
 from .labelme.sync import update_db_from_all_jsons, sync_library_down, sync_library_up
+
+logger = logging.getLogger(__name__)
 
 # ---- Annotated shapes sub-registry ----
 class ShapesRegistry:
@@ -60,11 +63,11 @@ class ShapesRegistry:
     def delete(self, id=None):
         if id is None:
             cur = self.conn.execute("DELETE FROM shapes")
-            print("Deleted all entries in shapes.")
+            logger.info("Deleted all entries in shapes.")
         else:
             placeholders = ",".join("?" for _ in [*id])
             cur = self.conn.execute(f"DELETE FROM shapes WHERE id IN ({placeholders})", [*id])
-            print(f"Deleted {len([*id])} entry from shapes.")
+            logger.info(f"Deleted {len([*id])} entry from shapes.")
 
 
     def to_df(self, library:str):

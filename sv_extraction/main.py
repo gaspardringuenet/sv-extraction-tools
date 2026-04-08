@@ -1,4 +1,6 @@
 import argparse
+import logging
+from pathlib import Path
 
 from .cli import get_CLI_parser, validate_and_parse
 from .echolabel.config import _get_app_cache_dir
@@ -7,24 +9,41 @@ from .demo_data import download_demo_data
 
 def main() -> None:
 
+    # Parse CLI arguments
     parser = get_CLI_parser()
     args = validate_and_parse(parser)
 
+    # Configure logger
+    level = "DEBUG" if args.debug else "INFO"
+    setup_logging(level, _get_app_cache_dir())
+    logger = logging.getLogger(__name__)
+
+    # Run required sub-app
     if args.command == "label":
-        run_label(args)
+        run_label(args, logger)
     elif args.command == "extract":
-        run_extract()
+        run_extract(logger)
 
 
-def run_label(args: argparse.Namespace) -> None:
+def setup_logging(level: str, cache_dir: Path) -> None:
+    """Configure application logger"""
+    logging.basicConfig(
+        format='%(levelname)s %(asctime)s: %(message)s (Line: %(lineno)d [%(filename)s])',
+        datefmt='%H:%M:%S',
+        level=level,
+        filename=str(cache_dir / "echolabel.log"),
+        filemode='w',
+    )
+
+
+def run_label(args: argparse.Namespace, logger: logging.Logger) -> None:
     from .echolabel.app import EcholabelApp
 
     if args.demo:
         args.input = download_demo_data(_get_app_cache_dir())
 
-    print(f"{args.registry = }")
-        
     # instanciate labelling app
+    logger.info("Instanciating labelling app.")
     app = EcholabelApp(
         input=args.input,
         libname=args.libname,
@@ -40,17 +59,21 @@ def run_label(args: argparse.Namespace) -> None:
     )
 
     # run the labelling app
+    logger.info("Running app.")
     app.run(force_rebuild_images=False)
 
     # TODO output current shapes library as csv file
 
 
-def run_extract() -> None:
+def run_extract(logger: logging.Logger) -> None:
     from .echotypes.app import EchotypesApp
 
     cache_dir = _get_app_cache_dir()
 
+    logger.info("Instanciating extraction app.")
     app = EchotypesApp(root=cache_dir, registry=cache_dir / "registry.db")
+
+    logger.info("Running extraction app.")
     app.run(debug=True)
 
 

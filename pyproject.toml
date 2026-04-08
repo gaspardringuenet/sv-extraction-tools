@@ -13,7 +13,7 @@ dependencies = [
     "dash-ag-grid",
     "dask",
     "flask",
-    "labelme",
+    "labelme==6.0.0",
     "matplotlib",
     "numpy",
     "netcdf4",
@@ -26,6 +26,7 @@ dependencies = [
     "tqdm",
     "xarray",
     "platformdirs>=4.9.4",
+    "rich>=14.3.3",
 ]
 
 [dependency-groups]

@@ -80,6 +80,10 @@ Examples:
         "--output", type=Path, default=Path(os.getcwd()),
         help=f"//TODO NOT IMPLEMENTED. Output folder for export (default: {Path(os.getcwd())})"
     )
+    label_parser.add_argument(
+        "--debug", action=argparse.BooleanOptionalAction,
+        help="Print debug level logs"
+    )
 
 
     # Extract command (launch Dash echotype extraction app)

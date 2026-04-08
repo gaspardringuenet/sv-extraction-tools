@@ -1,5 +1,6 @@
 """Syncing Labelme JSON files with database"""
 
+import logging
 from datetime import datetime
 import json
 from pathlib import Path
@@ -10,6 +11,8 @@ from typing import Sequence
 from .geometry import geometry_hash, clean_points, get_bbox
 from .parser import get_t_offset
 from ..sql import shapes as sql
+
+logger = logging.getLogger(__name__)
 
 # ---- Direct information flow: JSONs --> DB ----
 
@@ -33,6 +36,8 @@ def update_db_from_all_jsons(
         library_name (str): the ROI library name.
     """
 
+    logger.debug("Changing status of new, unchanged and modified shapes in db using JSON files...")
+
     now = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
     for json_file in json_dir.glob("*.json"):
@@ -40,9 +45,10 @@ def update_db_from_all_jsons(
             with conn:
                 json_to_shapes(conn, json_file, root_path, now, ei_id, library)
         except sqlite3.OperationalError as e:
-            print(f"Failed update of registry for JSON file - {json_file.name}\n{e}")
+            logger.warning(f"Failed update of registry for JSON file - {json_file.name}\n{e}")
         
     # Handle deleted shapes
+    logger.debug("Changing status of deleted shapes in db...")
     set_deleted(conn, json_dir, library)
 
 
@@ -196,7 +202,7 @@ def modify_shape(
         t_offset (int): ping axis offset of the image with regards to the echointegration.
         now (str): current datetime as string.
     """
-    
+
     cur = conn.cursor()
 
     # Fetch id, label, and shape
@@ -240,7 +246,6 @@ def set_deleted(conn: sqlite3.Connection, json_dir: Path | str, library: str) ->
         json_dir (Path | str): directory containing labelme JSON files.
         library (str): the ROI library name.
     """
-
     cur = conn.cursor()
     shape_ids = [shape["id"] for json_file in json_dir.glob("*.json") for shape in json.load(open(json_file))["shapes"]]
     sql_statement = sql.set_deleted(shape_ids)
@@ -289,6 +294,8 @@ UPDATE: a two step algorithm keeps all folder for a library synced:
 """
 
 def sync_library_down(conn: sqlite3.Connection, image_dataset_id: int, library: str) -> None:
+    logger.debug("Syncing library JSON down...")
+
     # Fetch the EI and destination folder from db
     cur = conn.execute("SELECT ei_id, image_folder_path FROM images_datasets WHERE id = ?", (image_dataset_id, ))
     row = cur.fetchone()
@@ -312,7 +319,7 @@ def sync_library_down(conn: sqlite3.Connection, image_dataset_id: int, library: 
     # Import
     _copy_paste_library(source_image_folder, [dest_image_folder], library)
 
-    print(f"\nLibrary synced down: imported from image folder {dest_image_folder} sharing EI {ei_id:02d}")
+    logger.info(f"Library synced down: imported from image folder {dest_image_folder} sharing EI {ei_id:02d}")
 
 
 def sync_library_up(conn: sqlite3.Connection, image_dataset_id: int, library: str) -> None:
@@ -325,6 +332,7 @@ def sync_library_up(conn: sqlite3.Connection, image_dataset_id: int, library: st
         image_dataset_id (int): row id of the source image dataset in the registry.
         library (str): name of the shapes library to propagate.
     """
+    logger.debug("Syncing library JSON up...")
 
     # Fetch the EI and source folder from db
     cur = conn.execute("SELECT ei_id, image_folder_path FROM images_datasets WHERE id = ?", (image_dataset_id, ))
@@ -345,15 +353,15 @@ def sync_library_up(conn: sqlite3.Connection, image_dataset_id: int, library: st
     # Propagate
     _copy_paste_library(source_image_folder, dest_image_folders, library)
 
-    print(f"\nLibrary synced up: available accross all {len(dest_image_folders) + 1} image datasets related to EI {ei_id:02d}")
-
+    logger.info(f"Library synced up: available accross {len(dest_image_folders) + 1} image datasets" \
+                "related to EI {ei_id:02d}")
 
 
 def _copy_paste_library(source_image_folder: Path | str, dest_image_folders: Sequence[Path|str], library: str):
     source_path = Path(source_image_folder) / library
 
     if not source_path.exists():
-        print(f"Warning: Source path {source_path} does not exist. Skipping propagations.")
+        logger.warning(f"Source path {source_path} does not exist. Skipping propagations.")
         return
 
     for image_folder in dest_image_folders:
