@@ -20,20 +20,24 @@ pip install .
 
 `Echolabel` allows the user to draw shapes on echograms. It builds an images dataset corresponding to a given dataset and visualization parameters, and wraps `Labelme` to enable seemless annotation.
 
+To run the app:
+
+```{bash}
+uv run echolabel --input_path /path/to/your/data --libname your_library_name
+```
+
 To run with demo data:
 
 ```{bash}
-uv run scripts/echolabel_demo.py --input_path /PATH/TO/DATA
+uv run echolabel --demo
 ```
 
-The `input_path` argument is optional. By default, the script will download a demonstration dataset. To reduce download time, we recommand downloading manually via this [GitHub asset link](https://github.com/gaspardringuenet/sv-extraction-tools/releases/download/demo-data-v1/sample_data.zip).
-
-The `EcholabelApp` then prints out echogram images and runs a `labelme` command as a subprocess, opening the UI.
+`Echolabel` then prints out echogram images and runs a `labelme` command as a subprocess, opening the UI.
 
 Expected terminal output:
 
 ```{bash}
-$ uv run scripts/echolabel_demo.py
+$ uv run echolabel --demo
 INFO 19:39:16: Downloading demo data. (Line: 50 [demo_data.py])
 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 97.9M/97.9M [02:30<00:00, 650kB/s]
 INFO 19:41:47: Unzipping. (Line: 54 [demo_data.py])
