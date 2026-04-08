@@ -18,6 +18,14 @@ Examples:
         """
     )
 
+
+    # Top-level argument
+    parser.add_argument(
+        "--cache_dir", action=argparse.BooleanOptionalAction,
+        help="Print cache directory path"
+    )
+
+    # Sub-commands
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Label command triggering labelme wrapper (default)
@@ -102,9 +110,6 @@ Examples:
 
 def validate_and_parse(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args = parser.parse_args()
-    
-    if args.command is None:
-        args.command = "label"
 
     if (args.command == "label") and (args.input is None) and (not args.demo):
         raise ValueError("--input or --demo required for the 'label' command")

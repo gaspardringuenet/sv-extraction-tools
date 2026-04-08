@@ -3,6 +3,8 @@ import logging
 from pathlib import Path
 import json
 import pandas as pd
+from rich.console import Console
+from rich.panel import Panel
 
 from .sql import shapes as sql
 from .labelme.sync import update_db_from_all_jsons, sync_library_down, sync_library_up
@@ -100,12 +102,16 @@ def _print_update(conn: sqlite3.Connection, library: str) -> None:
         print(e)
 
     n_tot = counts["new"] + counts["modified"] + counts["unchanged"]
-    print("\nLabelling session shapes registry update:",
-          f"\n * {counts['new']} new",
-          f"\n * {counts['modified']} modified",
-          f"\n * {counts['deleted']} deleted",
-          f"\n * Total number of shapes in library ({library}): {n_tot}")
-    
+
+    console = Console()
+    update_str = (
+        f"\n * {counts['new']} new"
+        f"\n * {counts['modified']} modified"
+        f"\n * {counts['deleted']} deleted"
+        f"\n * Total number of shapes in library ({library}): {n_tot}"
+    )
+    panel = Panel(update_str, title="Registry update")
+    console.print(panel)
 
 
 

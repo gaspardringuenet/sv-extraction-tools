@@ -128,7 +128,9 @@ class EcholabelAppConfig():
 # ---- Helper functions ----
 
 def _get_app_cache_dir() -> Path:
-    return Path(platformdirs.user_cache_dir("echolabel"))
+    path = Path(platformdirs.user_cache_dir("echolabel"))
+    path.mkdir(exist_ok=True, parents=True)
+    return path
 
 
 # ---- Builder path formatting functions ----

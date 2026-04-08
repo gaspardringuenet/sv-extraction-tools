@@ -1,7 +1,9 @@
 import glob
-import os
+import logging
 from pathlib import Path
 import subprocess
+from rich.console import Console
+from rich.panel import Panel
 from typing import Sequence
 import xarray
 
@@ -11,6 +13,7 @@ from .config import *
 from ..registry.labelme.parser import add_shape_ids
 from ..registry import Registry
 
+logger = logging.getLogger(__name__)
 class EcholabelApp:
     """An app to label multifrequency volume backscattering echograms using Labelme.
 
@@ -203,7 +206,7 @@ def build_images(dataset: xarray.Dataset, app_config: EcholabelAppConfig, force_
 
     if empty_save_dir or force_rebuild_images:
         statement = "Overwriting previous images..." if force_rebuild_images else "Building new images..."
-        print(statement)
+        logger.info(statement)
         build_survey_images(**app_config.image_data.__dict__, sv=dataset["Sv"])
 
 
@@ -227,13 +230,18 @@ def run_labelling_session(app_config: EcholabelAppConfig):
 
     ei_info = get_ei_metadata(app_config.paths.registry, app_config.paths.cache, app_config.image_data.ei_id)
 
-    #print(f"\n==== Echogram labelling session ====\n")
-    print("Echogram labelling session")
-    print(f" - Id:\t\t{app_config.session.session_id}")
-    print(f" - Name:\t{app_config.session.libname}")
-    print(f" - Cruise:\t{app_config.image_data.cruise_name}")
-    print(f" - EI:\t\t{ei_info.get('data_ping_axis_interval_value')} {ei_info.get('data_ping_axis_interval_type')} x {ei_info.get('data_range_axis_interval_value')} {ei_info.get('data_range_axis_interval_type')} (EI id {app_config.image_data.ei_id})")
-    print(f" - Images:\t{app_config.image_data.save_dir}")
+    console = Console()
+    summary_str = (
+        f" - Id:\t\t{app_config.session.session_id}"
+        f"\n - Name:\t{app_config.session.libname}"
+        f"\n - Cruise:\t{app_config.image_data.cruise_name}"
+        f"\n - EI:\t\t{ei_info.get('data_ping_axis_interval_value')} {ei_info.get('data_ping_axis_interval_type')} x {ei_info.get('data_range_axis_interval_value')} {ei_info.get('data_range_axis_interval_type')} (EI id {app_config.image_data.ei_id})"
+        f"\n - Images:\t{app_config.image_data.save_dir}"
+    )
+
+    panel = Panel(summary_str, title="Echogram labelling session")
+    console.print(panel)
+
 
     log_file = app_config.paths.cache / "labelme.log"
     
@@ -249,8 +257,6 @@ def run_labelling_session(app_config: EcholabelAppConfig):
             stderr=log
         )
 
-    #print("\n====================================")
-
 
 def get_ei_metadata(db_path: Path, cache_dir: Path, ei_id: int) -> dict:
     """Fetches echointegration metadata from the registry.
@@ -264,7 +270,7 @@ def get_ei_metadata(db_path: Path, cache_dir: Path, ei_id: int) -> dict:
 def update_registry(app_config: EcholabelAppConfig):
     """Updates db using labelme outputs (.json files).
     """
-    print(f"\nUpdating shapes registry file at: {app_config.paths.registry}")
+    logger.info(f"\nUpdating shapes registry file at: {app_config.paths.registry}")
 
     with Registry(app_config.paths.registry, app_config.paths.cache) as registry:
         registry.shapes.sync_db_from_jsons(

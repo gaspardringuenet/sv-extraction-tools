@@ -13,6 +13,10 @@ def main() -> None:
     parser = get_CLI_parser()
     args = validate_and_parse(parser)
 
+    if args.cache_dir:
+        print(_get_app_cache_dir())
+        return
+    
     # Configure logger
     level = "DEBUG" if args.debug else "INFO"
     setup_logging(level, _get_app_cache_dir())

@@ -27,7 +27,7 @@ def download_file(url: str, output_dir: Path) -> str:
         r.raise_for_status()
         total_size = int(r.headers.get('content-length', 0))
 
-        with open(output_file, "wb") as f, tqdm(total=total_size, unit="B", unit_scale=True) as pbar:
+        with open(output_file, "wb") as f, tqdm(total=total_size, unit="B", unit_scale=True, desc='Downloading demo data') as pbar:
             for chunk in r.raw.stream(1024 * 1024, decode_content=False):
                 f.write(chunk)
                 pbar.update(len(chunk))
