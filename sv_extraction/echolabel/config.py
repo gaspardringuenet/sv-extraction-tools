@@ -1,8 +1,9 @@
 from datetime import datetime
 from pathlib import Path
+import platformdirs
 from typing import Sequence
 
-from ..config import _validate_root_path, _validate_input_path, _validate_registry_path
+from ..paths_validation import _validate_root_path, _validate_input_path, _validate_registry_path
 
 # ---- Configuration classes ----
 
@@ -14,12 +15,11 @@ class EcholabelPathsConfig():
         registry: Path | str = None,
     ):
         self.root = _validate_root_path(root)
+        self.cache = _get_app_cache_dir()
+        self.images = self.cache / "echogram_images"
 
-        self.app_data = self.root / "app_data"
-        self.images = self.app_data / "echogram_images"
-
-        self.input = _validate_input_path(input, self.root)  
-        self.registry = _validate_registry_path(registry, self.root, self.app_data)
+        self.input = _validate_input_path(input)  
+        self.registry = _validate_registry_path(registry, self.cache)
     
     def __repr__(self):
         params = ", ".join([f'{key}={value!r}' for (key, value) in self.__dict__.items()])
@@ -28,14 +28,12 @@ class EcholabelPathsConfig():
     def __str__(self):
         return str(self.__dict__)
     
-    def make_app_dirs(self):
-        self.app_data.mkdir(parents=True, exist_ok=True)
+    def make_cache(self):
+        self.cache.mkdir(parents=True, exist_ok=True)
         self.images.mkdir(parents=True, exist_ok=True)
 
-    
 
 class DataLoadingConfig():
-    
     def __init__(self, chunks: dict):
         self.chunks = chunks
 
@@ -128,6 +126,10 @@ class EcholabelAppConfig():
 
 
 # ---- Helper functions ----
+
+def _get_app_cache_dir() -> Path:
+    return Path(platformdirs.user_cache_dir("echolabel"))
+
 
 # ---- Builder path formatting functions ----
 

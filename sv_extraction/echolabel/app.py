@@ -32,7 +32,7 @@ class EcholabelApp:
         libname: str,
         frequencies: float | Sequence[float],
         echogram_cmap: str,
-        root: str | Path = os.getcwd(),
+        #root: str | Path = os.getcwd(),
         registry: str | Path = None,
         time_frame_size: int = 10_000,
         z_min_idx: int = 0,
@@ -40,7 +40,7 @@ class EcholabelApp:
         vmin: float = -90.,
         vmax: float = -50.,
         xarray_chunking: dict = None
-    ) -> EcholabelAppConfig:
+    ):
         """Builds app configuration.
 
         Parameters
@@ -69,17 +69,11 @@ class EcholabelApp:
             maximal volume backscattering value for color mapping (in dB), by default -50.
         xarray_chunking : dict, optional
             chunk arguments for lazy loading with xarray (e.g., {'time': 10_000, 'depth': 100}), by default None
-
-        Returns
-        -------
-        EcholabelAppConfig
-            the EcholabelApp configuration object, containing namely paths, image printing parameters, and labelling session info
         """
 
         self.config = build_app_config(
             input,
             libname,
-            root,
             registry,
             time_frame_size,
             z_min_idx,
@@ -109,7 +103,7 @@ class EcholabelApp:
         # Sync library by importing JSON files from another image folder (having the same EI; if it exists)
         sync_library(self.config, flow="down")
 
-        # Run LABELME and fetch session id
+        # Run LABELME as subprocess
         run_labelling_session(self.config)
 
         # Add tracking infos to JSON outputs (add id's and update geometry hash)
@@ -128,7 +122,7 @@ class EcholabelApp:
 def build_app_config(
     input: str | Path,
     libname: str,
-    root: str | Path = os.getcwd(),
+    #root: str | Path = os.getcwd(),
     registry: str | Path = None,
     time_frame_size: int = 10_000,
     z_min_idx: int = 0,
@@ -143,15 +137,15 @@ def build_app_config(
     Build Echolabel App Config object
     """
     # Build paths config object (auto formats / validates on class init)
-    paths_config = EcholabelPathsConfig(input, root, registry)
-    paths_config.make_app_dirs()
+    paths_config = EcholabelPathsConfig(input, root=None, registry=registry)
+    paths_config.make_cache()
 
     # Build data loading config object (use only to store chunking)
     loading_config = DataLoadingConfig(chunks=xarray_chunking)
     
     # Load data, register in db and get id
     dataset = load_dataset(path=paths_config.input, chunks=loading_config.chunks)
-    ei_id = get_or_register_ei(paths_config.registry, paths_config.root, paths_config.input, dataset)
+    ei_id = get_or_register_ei(paths_config.registry, paths_config.cache, paths_config.input, dataset)
 
     # Build image data config object
     image_data_config = ImageDataConfig(
@@ -168,7 +162,7 @@ def build_app_config(
     )
 
     # Register image dataset in db and get it
-    image_dataset_id = get_or_register_image_dataset(paths_config.registry, paths_config.root, image_data_config)
+    image_dataset_id = get_or_register_image_dataset(paths_config.registry, paths_config.cache, image_data_config)
 
     # Build session config object
     session_config = LabellingSessionConfig(image_dataset_id, libname)
@@ -179,23 +173,23 @@ def build_app_config(
     return app_config
 
 
-def get_or_register_ei(registry_file: Path, here: Path, input_dir: Path, ds: xarray.Dataset):
+def get_or_register_ei(registry_file: Path, cache_dir: Path, input_dir: Path, ds: xarray.Dataset):
     """Ensures registry schema, registers the echointegration associated to input_dir
     (if it does not already exist in registry) and returns the row id in the echointegrations
     table.
     """
     files = glob.glob(str(input_dir / "*.nc"))
-    with Registry(db_path=registry_file, root_path=here) as registry:
+    with Registry(db_path=registry_file, root_path=cache_dir) as registry:
         ei_id = registry.ei.insert_row(ds, files)
         registry.conn.commit()
     return ei_id
 
         
-def get_or_register_image_dataset(registry_file, here, cfg: ImageDataConfig):
+def get_or_register_image_dataset(registry_file: Path, cache_dir: Path, cfg: ImageDataConfig):
     """Registers the image dataset associated to the configuration object (if it does not already
     exist in registry) and returns the row id in the image_datasets table.
     """
-    with Registry(db_path=registry_file, root_path=here) as reg:
+    with Registry(db_path=registry_file, root_path=cache_dir) as reg:
         id = reg.images.insert_row(cfg)
         reg.conn.commit()
     return id
@@ -231,7 +225,7 @@ def run_labelling_session(app_config: EcholabelAppConfig):
     """Helper to run LABELME on pre-printed echogram images.
     """
 
-    ei_info = get_ei_metadata(app_config.paths.registry, app_config.paths.root, app_config.image_data.ei_id)
+    ei_info = get_ei_metadata(app_config.paths.registry, app_config.paths.cache, app_config.image_data.ei_id)
 
     #print(f"\n==== Echogram labelling session ====\n")
     print("Echogram labelling session")
@@ -241,7 +235,7 @@ def run_labelling_session(app_config: EcholabelAppConfig):
     print(f" - EI:\t\t{ei_info.get('data_ping_axis_interval_value')} {ei_info.get('data_ping_axis_interval_type')} x {ei_info.get('data_range_axis_interval_value')} {ei_info.get('data_range_axis_interval_type')} (EI id {app_config.image_data.ei_id})")
     print(f" - Images:\t{app_config.image_data.save_dir}")
 
-    log_file = app_config.paths.app_data / "labelme.log"
+    log_file = app_config.paths.cache / "labelme.log"
     
     with open(log_file, 'w') as log:
         subprocess.run(
@@ -249,8 +243,7 @@ def run_labelling_session(app_config: EcholabelAppConfig):
                 "labelme",
                 str(app_config.image_data.save_dir),
                 '--output',
-                str(app_config.json_dir()),
-                #'--nodata'                                          # avoids encoding the image in the json file
+                str(app_config.json_dir())
             ],
             stdout=log,
             stderr=log
@@ -259,11 +252,11 @@ def run_labelling_session(app_config: EcholabelAppConfig):
     #print("\n====================================")
 
 
-def get_ei_metadata(db_path: Path, root_path: Path, ei_id: int) -> dict:
+def get_ei_metadata(db_path: Path, cache_dir: Path, ei_id: int) -> dict:
     """Fetches echointegration metadata from the registry.
     """
 
-    with Registry(db_path, root_path) as registry:
+    with Registry(db_path, cache_dir) as registry:
         ei_info = registry.ei.get(id=ei_id)
     return ei_info
 
@@ -273,7 +266,7 @@ def update_registry(app_config: EcholabelAppConfig):
     """
     print(f"\nUpdating shapes registry file at: {app_config.paths.registry}")
 
-    with Registry(app_config.paths.registry, app_config.paths.root) as registry:
+    with Registry(app_config.paths.registry, app_config.paths.cache) as registry:
         registry.shapes.sync_db_from_jsons(
             json_dir=app_config.json_dir(),
             ei_id=app_config.image_data.ei_id, 

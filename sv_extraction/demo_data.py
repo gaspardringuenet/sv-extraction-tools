@@ -1,22 +1,22 @@
 """Helpers to download demo data"""
-
 import logging
 from pathlib import Path
 import requests
 from tqdm import tqdm
 import zipfile
 
-# define root folder
-HERE = Path(__file__).parent.parent
+# URL adress of demo data file
+URL = "https://github.com/gaspardringuenet/sv-extraction-tools/releases/download/demo-data-v1/sample_data.zip"
 
 # Init logger
 logger = logging.getLogger(__name__)
 
 
-def download_file(url: str) -> str:
+def download_file(url: str, output_dir: Path) -> str:
     """Download a file from a url using requests"""
 
     local_filename = url.split('/')[-1]
+    output_file = output_dir / local_filename
 
     headers = {
         "User-Agent": "curl/8.0",
@@ -27,17 +27,20 @@ def download_file(url: str) -> str:
         r.raise_for_status()
         total_size = int(r.headers.get('content-length', 0))
 
-        with open(local_filename, "wb") as f, tqdm(total=total_size, unit="B", unit_scale=True) as pbar:
+        with open(output_file, "wb") as f, tqdm(total=total_size, unit="B", unit_scale=True) as pbar:
             for chunk in r.raw.stream(1024 * 1024, decode_content=False):
                 f.write(chunk)
                 pbar.update(len(chunk))
         
-    return local_filename
+    return output_file
 
 
-def download_demo_data() -> Path:
+def download_demo_data(cache_dir: Path) -> Path:
     """Download sample data from GitHub release"""
-    output_file = HERE / "app_data/input/sample_data.nc"
+
+    zipped_filename = URL.split('/')[-1]
+    output_dir = cache_dir / "demo"
+    output_file = (output_dir / zipped_filename).with_suffix(".nc")
 
     if output_file.exists():
         logger.warning(f"Demo data file already exists at {output_file}.")
@@ -45,11 +48,9 @@ def download_demo_data() -> Path:
     
     output_file.parent.mkdir(exist_ok=True, parents=True)
 
-    url = "https://github.com/gaspardringuenet/sv-extraction-tools/releases/download/demo-data-v1/sample_data.zip"
-
     logger.info("Downloading demo data.")
 
-    zipped_file = HERE / download_file(url)
+    zipped_file = download_file(URL, cache_dir)
 
     logger.info("Unzipping.")
     with zipfile.ZipFile(zipped_file, 'r') as zip_ref:

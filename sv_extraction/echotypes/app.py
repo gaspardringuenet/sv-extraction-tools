@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Literal, Optional
 import xarray as xr
 
-from ..config import _validate_root_path
+from ..paths_validation import _validate_root_path
 
 from .layout.main import make_layout
 from .callbacks import *

@@ -64,3 +64,6 @@ Library synced up: available accross all 1 image datasets related to EI 01
 `Labelme` UI example:
 
 ![alt text](image.png)
+
+## `Echotypes` Demo
+

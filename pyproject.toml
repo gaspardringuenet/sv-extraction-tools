@@ -25,6 +25,7 @@ dependencies = [
     "scipy",
     "tqdm",
     "xarray",
+    "platformdirs>=4.9.4",
 ]
 
 [dependency-groups]
@@ -43,3 +44,6 @@ sv_extraction = [
     "*.svg", 
     "*.css"
 ]
+
+[project.scripts]
+echolabel = "sv_extraction.echolabel.main:main"
