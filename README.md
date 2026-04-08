@@ -1,4 +1,4 @@
-# Sv Extraction Tools
+# `echolabel` - Interactive Echogram Data Extraction Tools
 
 Interactive Python tools to extract acoustic volume backscattering data from multi-frequency echograms.
 
@@ -16,28 +16,30 @@ source .venv/bin/activate
 pip install .
 ```
 
-## `Echolabel` Demo
+## `echolabel` Demo
 
-`Echolabel` allows the user to draw shapes on echograms. It builds an images dataset corresponding to a given dataset and visualization parameters, and wraps `Labelme` to enable seemless annotation.
+### Labelling shape using `labelme`
 
-To run the app:
+`echolabel` allows the user to draw shapes on echograms. It builds an images dataset corresponding to a given dataset and visualization parameters, and wraps [`labelme`](https://labelme.io/) to enable seemless annotation.
+
+To run the app, use the `label` sub-command[^1]:
 
 ```{bash}
-uv run echolabel --input_path /path/to/your/data --libname your_library_name
+uv run echolabel label --input_path /path/to/your/data --libname your_library_name
 ```
 
 To run with demo data:
 
 ```{bash}
-uv run echolabel --demo
+uv run echolabel label --demo
 ```
 
-`Echolabel` then prints out echogram images and runs a `labelme` command as a subprocess, opening the UI.
+`echolabel` then prints out echogram images and runs a `labelme` command as a subprocess, opening the UI.
 
 Expected terminal output:
 
 ```{bash}
-$ uv run echolabel --demo
+$ uv run echolabel label --demo
 INFO 19:39:16: Downloading demo data. (Line: 50 [demo_data.py])
 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 97.9M/97.9M [02:30<00:00, 650kB/s]
 INFO 19:41:47: Unzipping. (Line: 54 [demo_data.py])
@@ -69,5 +71,25 @@ Library synced up: available accross all 1 image datasets related to EI 01
 
 ![alt text](image.png)
 
-## `Echotypes` Demo
+## Extracting subsets of data from the shapes
 
+Since `echolabel` is focused on shapes, is necessarily captures all the pixels within a given polygon (or circle). A scientific operator may be interested in only a subset of those pixels (for instance to build a machine learning training dataset). To solve this issue, a second software allows the interactive refinement of the selected data.
+
+To run it, use the `extract` sub-command:
+
+```{bash}
+uv run echolabel extract
+```
+
+Expected terminal output:
+
+```{bash}
+$ uv run echolabel extract
+Dash is running on http://127.0.0.1:8050/
+ * Serving Flask app 'EchotypesApp'
+ * Debug mode: on
+```
+
+The user must then open a webrowser at the printed adress.
+
+[^1]: Note that the `uv run` commands are only necessary for UV users. `pip` users can simply omit them. The CLI commands should work as long as the package is installed.

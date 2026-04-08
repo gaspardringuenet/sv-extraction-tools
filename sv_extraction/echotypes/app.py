@@ -1,7 +1,6 @@
 from dash import Dash
 from flask import Flask
 
-from importlib.resources import files
 from pathlib import Path
 from typing import Literal, Optional
 import xarray as xr

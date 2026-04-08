@@ -46,4 +46,5 @@ sv_extraction = [
 ]
 
 [project.scripts]
-echolabel = "sv_extraction.echolabel.main:main"
+echolabel = "sv_extraction.main:main"
+
