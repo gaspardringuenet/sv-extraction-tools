@@ -1,5 +1,5 @@
-from .echolabel.app import EcholabelApp
-from .echotypes.app import EchotypesApp
+from .label.app import EcholabelApp
+from .extract.app import EchotypesApp
 from .registry import Registry
 
 __all__ = [

@@ -19,6 +19,7 @@ def main() -> None:
     
     # Configure logger
     level = "DEBUG" if args.debug else "INFO"
+    
     setup_logging(level, get_app_cache_dir())
     logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ def setup_logging(level: str, cache_dir: Path) -> None:
 
 
 def run_label(args: argparse.Namespace, logger: logging.Logger) -> None:
-    from .echolabel.app import EcholabelApp
+    from .label.app import EcholabelApp
 
     if args.demo:
         args.input = download_demo_data(get_app_cache_dir())
@@ -83,7 +84,7 @@ def run_label(args: argparse.Namespace, logger: logging.Logger) -> None:
 
 
 def run_extract(logger: logging.Logger) -> None:
-    from .echotypes.app import EchotypesApp
+    from .extract.app import EchotypesApp
 
     cache_dir = get_app_cache_dir()
 

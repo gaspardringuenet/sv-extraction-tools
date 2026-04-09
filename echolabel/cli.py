@@ -28,7 +28,6 @@ Examples:
         "--cache_dir", action=argparse.BooleanOptionalAction,
         help="Print cache directory path"
     )
-    
 
     # Sub-commands
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -93,11 +92,12 @@ Examples:
         "--output", type=Path, default=Path(os.getcwd()),
         help=f"//TODO NOT IMPLEMENTED. Output folder for export (default: {Path(os.getcwd())})"
     )
+
     label_parser.add_argument(
         "--debug", action=argparse.BooleanOptionalAction,
         help="Print debug level logs"
     )
-
+    
 
     # Extract command (launch Dash echotype extraction app)
     extract_parser = subparsers.add_parser(
@@ -108,6 +108,11 @@ Examples:
     extract_parser.add_argument(
         "--registry", type=Path, default=None,
         help="Path to custom registry file (defaut: echolabel cache)"
+    )
+
+    extract_parser.add_argument(
+        "--debug", action=argparse.BooleanOptionalAction,
+        help="Print debug level logs"
     )
 
     

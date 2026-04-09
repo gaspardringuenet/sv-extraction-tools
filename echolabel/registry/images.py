@@ -2,7 +2,7 @@ import sqlite3
 import json
 import logging
 
-from ..echolabel.config import ImageDataConfig
+from ..label.config import ImageDataConfig
 from .sql import images as sql
 
 # ---- Image datasets sub-registry ----

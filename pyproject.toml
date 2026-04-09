@@ -3,9 +3,9 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sv-extraction"
+name = "echolabel"
 version = "0.0.0"
-description = "Interactive tools to extract data from echograms."
+description = "Interactive echogram labelling tools"
 authors = [{name = "Gaspard Ringuenet", email = "gaspard.ringuenet@gmail.com"}]
 requires-python = ">=3.11"
 dependencies = [
@@ -39,7 +39,7 @@ dev = [
 where = ["."]
 
 [tool.setuptools.package-data]
-sv_extraction = [
+echolabel = [
     "registry/sql/schema.sql", 
     "echotypes/assets/**/*",
     "*.svg", 
@@ -47,5 +47,5 @@ sv_extraction = [
 ]
 
 [project.scripts]
-echolabel = "sv_extraction.main:main"
+echolabel = "echolabel.main:main"
 
