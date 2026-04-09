@@ -22,11 +22,22 @@ def main() -> None:
     setup_logging(level, get_app_cache_dir())
     logger = logging.getLogger(__name__)
 
-    # Run required sub-app
+    # Run required sub-command
     if args.command == "label":
         run_label(args, logger)
     elif args.command == "extract":
         run_extract(logger)
+    elif args.command == "copy-shapes-lib":
+        run_copy('shapes', args, logger)
+    elif args.command == "copy-echotypes-lib":
+        run_copy('echotypes', args, logger)
+    elif args.command == "delete-shapes-lib":
+        ...
+    elif args.command == "delete-cache":
+        ...
+    else:
+        raise ValueError("Incorrect command.")
+
 
 
 def setup_logging(level: str, cache_dir: Path) -> None:
@@ -38,6 +49,7 @@ def setup_logging(level: str, cache_dir: Path) -> None:
         filename=str(cache_dir / "echolabel.log"),
         filemode='w',
     )
+
 
 
 def run_label(args: argparse.Namespace, logger: logging.Logger) -> None:
@@ -69,6 +81,7 @@ def run_label(args: argparse.Namespace, logger: logging.Logger) -> None:
     # TODO output current shapes library as csv file
 
 
+
 def run_extract(logger: logging.Logger) -> None:
     from .echotypes.app import EchotypesApp
 
@@ -79,6 +92,12 @@ def run_extract(logger: logging.Logger) -> None:
 
     logger.info("Running extraction app.")
     app.run(debug=True)
+
+
+
+def run_copy(*args):
+    ...
+
 
 
 if __name__ == "__main__":

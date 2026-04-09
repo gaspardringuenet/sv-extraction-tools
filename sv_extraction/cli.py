@@ -15,6 +15,10 @@ Examples:
     echolabel label --input /path/to/data --frequencies 38 70 120 --cmap RGB    # Specify the frequency channels for RGB mapping
     echolabel label --input /path/to/data --frequencies --cmap viridis          # Single channel mapping
     echolabel extract                                                           # Extract echotypes from labelled shapes
+    echolabel copy-shapes-lib my_lib my_lib_copy --include_downstream           # Copy a shapes library (incl. children echotypes)
+    echolabel delete-shapes-lib my_lib                                          # Delete a shapes library and downstream data
+    echolabel copy-echotypes-lib my_lib my_lib_copy                             # Copy an echotypes library
+    echolabel delete-cache                                                      # Wipe out all cached data
         """
     )
 
@@ -24,9 +28,11 @@ Examples:
         "--cache_dir", action=argparse.BooleanOptionalAction,
         help="Print cache directory path"
     )
+    
 
     # Sub-commands
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
 
     # Label command triggering labelme wrapper (default)
     label_parser = subparsers.add_parser(
@@ -34,7 +40,6 @@ Examples:
         help="Launch interactive echogram shapes labelling tools (default)",
 
     )
-
 
     label_parser.add_argument(
         "--input", type=Path, default=None,
@@ -103,6 +108,69 @@ Examples:
     extract_parser.add_argument(
         "--registry", type=Path, default=None,
         help="Path to custom registry file (defaut: echolabel cache)"
+    )
+
+    
+    # Copy shapes library command
+    copy_shapes_parser = subparsers.add_parser(
+        name="copy-shapes-lib",
+        help="Copy a shapes library"
+    )
+    copy_shapes_parser.add_argument(
+        "source", type=str,
+        help="Name of the source shapes library"
+    )
+    copy_shapes_parser.add_argument(
+        "destination", type=str,
+        help="Name of the destination shapes library"
+    )
+    copy_shapes_parser.add_argument(
+        "--include_downstream", action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Also copy all echotypes_libraries derived from this shapes_library (default: False)"
+    )
+
+
+
+    # Copy echotypes library command
+    copy_echotypes_parser = subparsers.add_parser(
+        name="copy-echotypes-lib",
+        help="Copy an echotypes library"
+    )
+    copy_echotypes_parser.add_argument(
+        "source", type=str,
+        help="Name of the source echotypes library"
+    )
+    copy_echotypes_parser.add_argument(
+        "destination", type=str,
+        help="Name of the destination echotypes library"
+    )
+
+
+    # Delete shapes library command
+    delete_shapes_parser = subparsers.add_parser(
+        name="delete-shapes-lib",
+        help="Delete a shapes library and all downstream data"
+    )
+    delete_shapes_parser.add_argument(
+        "name", type=str,
+        help="Name of the shapes library to delete"
+    )
+    delete_shapes_parser.add_argument(
+        "--force", action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Skip confirmation prompt (default: False)"
+    )
+
+    # Clean cache command
+    clean_cache_parser = subparsers.add_parser(
+        name="delete-cache",
+        help="Delete all cache files (incl. database)"
+    )
+    clean_cache_parser.add_argument(
+        "--force", action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Skip confirmation prompt (default: False)"
     )
 
     return parser
