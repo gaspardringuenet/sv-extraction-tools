@@ -354,7 +354,7 @@ def sync_library_up(conn: sqlite3.Connection, image_dataset_id: int, library: st
     _copy_paste_library(source_image_folder, dest_image_folders, library)
 
     logger.info(f"Library synced up: available accross {len(dest_image_folders) + 1} image datasets" \
-                "related to EI {ei_id:02d}")
+                " related to EI {ei_id:02d}")
 
 
 def _copy_paste_library(source_image_folder: Path | str, dest_image_folders: Sequence[Path|str], library: str):

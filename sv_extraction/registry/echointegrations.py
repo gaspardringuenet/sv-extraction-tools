@@ -21,17 +21,20 @@ class EIRegistry():
     def insert_row(self, ds: xr.Dataset, nc_files_list: list) -> int:
         return insert_ei(self.conn, ds, nc_files_list)
     
-    def get(self, id):
+    def get(self, id: int) -> dict:
         cur = self.conn.execute("SELECT * FROM echointegrations WHERE id = ?;", (id,))
         row = cur.fetchone()
         if row is None:
             raise ValueError(f"Id {id} not found in echointegrations table.")
-        else:
-            return dict(row)
+        return dict(row)
         
-    def delete(self, id):
-        #TODO Fetch all images datasets and delete them first (incl. erasing files / folders)
-        self.conn.execute(sql.DELETE_EI, (id,))
+    def count_shapes(self) -> List[dict[str, int]]:
+        """Count the number of shapes per parent echointegration"""
+        cur = self.conn.execute(sql.COUNT_SHAPES)
+        rows = cur.fetchall()
+        if rows is None:
+            raise ValueError("Registry is empty.")
+        return [dict(row) for row in rows]
 
 
 # ---- Helper function ----

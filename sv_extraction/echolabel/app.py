@@ -12,6 +12,7 @@ from .builder import build_survey_images
 from .config import *
 from ..registry.labelme.parser import add_shape_ids
 from ..registry import Registry
+from ..cache.cleanup import cache_cleanup
 
 logger = logging.getLogger(__name__)
 class EcholabelApp:
@@ -118,6 +119,8 @@ class EcholabelApp:
         # Sync library by exporting JSON files to all other image folders (for the same EI)
         sync_library(self.config, flow="up")
 
+        # Cleanup of the database and cache files (if EI has no shapes)
+        cache_cleanup(self.config.paths.registry, self.config.paths.cache)
 
 
 # ---- Helper functions ---- #
@@ -232,11 +235,11 @@ def run_labelling_session(app_config: EcholabelAppConfig):
 
     console = Console()
     summary_str = (
-        f" - Id:\t\t{app_config.session.session_id}"
-        f"\n - Name:\t{app_config.session.libname}"
-        f"\n - Cruise:\t{app_config.image_data.cruise_name}"
-        f"\n - EI:\t\t{ei_info.get('data_ping_axis_interval_value')} {ei_info.get('data_ping_axis_interval_type')} x {ei_info.get('data_range_axis_interval_value')} {ei_info.get('data_range_axis_interval_type')} (EI id {app_config.image_data.ei_id})"
-        f"\n - Images:\t{app_config.image_data.save_dir}"
+        f" * Session id:\t\t{app_config.session.session_id}"
+        f"\n * Library name:\t{app_config.session.libname}"
+        f"\n * Cruise name:\t\t{app_config.image_data.cruise_name}"
+        f"\n * Echointegration:\t{ei_info.get('data_ping_axis_interval_value')} {ei_info.get('data_ping_axis_interval_type')} x {ei_info.get('data_range_axis_interval_value')} {ei_info.get('data_range_axis_interval_type')} (EI id {app_config.image_data.ei_id})"
+        f"\n * Folder in cache:\t{app_config.image_data.save_dir.relative_to(app_config.paths.cache)}"
     )
 
     panel = Panel(summary_str, title="Echogram labelling session")
@@ -270,7 +273,7 @@ def get_ei_metadata(db_path: Path, cache_dir: Path, ei_id: int) -> dict:
 def update_registry(app_config: EcholabelAppConfig):
     """Updates db using labelme outputs (.json files).
     """
-    logger.info(f"\nUpdating shapes registry file at: {app_config.paths.registry}")
+    logger.info(f"Updating shapes registry file at: {app_config.paths.registry}")
 
     with Registry(app_config.paths.registry, app_config.paths.cache) as registry:
         registry.shapes.sync_db_from_jsons(

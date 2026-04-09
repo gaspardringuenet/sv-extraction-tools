@@ -28,3 +28,10 @@ DELETE_EI = """
     DELETE FROM echointegrations
     WHERE id = ?;
 """
+
+COUNT_SHAPES = """
+    SELECT e.id AS id, count(s.id) AS count FROM echointegrations AS e
+    LEFT JOIN shapes_libraries AS slib ON slib.ei_id = e.id
+    LEFT JOIN shapes AS s ON s.library_id = slib.id
+    GROUP BY e.id;
+"""

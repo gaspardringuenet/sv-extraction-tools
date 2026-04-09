@@ -105,7 +105,7 @@ def _print_update(conn: sqlite3.Connection, library: str) -> None:
 
     console = Console()
     update_str = (
-        f"\n * {counts['new']} new"
+        f" * {counts['new']} new"
         f"\n * {counts['modified']} modified"
         f"\n * {counts['deleted']} deleted"
         f"\n * Total number of shapes in library ({library}): {n_tot}"

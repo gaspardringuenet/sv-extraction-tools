@@ -1,9 +1,9 @@
 from datetime import datetime
 from pathlib import Path
-import platformdirs
 from typing import Sequence
 
 from ..paths_validation import _validate_root_path, _validate_input_path, _validate_registry_path
+from ..cache.dir import get_app_cache_dir
 
 # ---- Configuration classes ----
 
@@ -15,7 +15,7 @@ class EcholabelPathsConfig():
         registry: Path | str = None,
     ):
         self.root = _validate_root_path(root)
-        self.cache = _get_app_cache_dir()
+        self.cache = get_app_cache_dir()
         self.images = self.cache / "echogram_images"
 
         self.input = _validate_input_path(input)  
@@ -126,12 +126,6 @@ class EcholabelAppConfig():
 
 
 # ---- Helper functions ----
-
-def _get_app_cache_dir() -> Path:
-    path = Path(platformdirs.user_cache_dir("echolabel"))
-    path.mkdir(exist_ok=True, parents=True)
-    return path
-
 
 # ---- Builder path formatting functions ----
 

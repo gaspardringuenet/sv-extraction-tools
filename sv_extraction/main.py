@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 from .cli import get_CLI_parser, validate_and_parse
-from .echolabel.config import _get_app_cache_dir
+from .cache.dir import get_app_cache_dir
 from .demo_data import download_demo_data
 
 
@@ -14,12 +14,12 @@ def main() -> None:
     args = validate_and_parse(parser)
 
     if args.cache_dir:
-        print(_get_app_cache_dir())
+        print(get_app_cache_dir())
         return
     
     # Configure logger
     level = "DEBUG" if args.debug else "INFO"
-    setup_logging(level, _get_app_cache_dir())
+    setup_logging(level, get_app_cache_dir())
     logger = logging.getLogger(__name__)
 
     # Run required sub-app
@@ -44,7 +44,7 @@ def run_label(args: argparse.Namespace, logger: logging.Logger) -> None:
     from .echolabel.app import EcholabelApp
 
     if args.demo:
-        args.input = download_demo_data(_get_app_cache_dir())
+        args.input = download_demo_data(get_app_cache_dir())
 
     # instanciate labelling app
     logger.info("Instanciating labelling app.")
@@ -72,7 +72,7 @@ def run_label(args: argparse.Namespace, logger: logging.Logger) -> None:
 def run_extract(logger: logging.Logger) -> None:
     from .echotypes.app import EchotypesApp
 
-    cache_dir = _get_app_cache_dir()
+    cache_dir = get_app_cache_dir()
 
     logger.info("Instanciating extraction app.")
     app = EchotypesApp(root=cache_dir, registry=cache_dir / "registry.db")
