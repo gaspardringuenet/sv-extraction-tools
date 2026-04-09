@@ -185,6 +185,27 @@ class EchotypeRegistry:
         return df
     
 
+    def copy_lib(self, source_name: str, dest_name: str) -> None:
+
+        # Get the id of the source library
+        cur = self.conn.execute("SELECT id FROM echotypes_libraries WHERE name = ?;", (source_name,))
+        row = cur.fetchone()
+        if not row:
+            raise ValueError("Source library name does not exist in registry.")
+        source_id = dict(row)["id"]
+
+        # Copy at the library level
+        cur = self.conn.execute(sql.COPY_ECHOTYPES_LIB, (dest_name, source_id))
+        row = cur.fetchone()
+        if not row:
+            raise ValueError(f"Unable to copy echotype library with source id {source_id}.")
+        dest_id = dict(row)["id"]
+
+        # Copy at the entries level
+        self.conn.execute(sql.COPY_ECHOTYPES_ENTRIES, (dest_id, source_id))
+    
+
+
 # ---- Helper functions ----
 
 def extract_clustering_params(fitted_model: GaussianMixture | KMeans) -> dict:

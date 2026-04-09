@@ -1,9 +1,9 @@
-from .label.app import EcholabelApp
-from .extract.app import EchotypesApp
+from .label.app import LabelmeWrapper
+from .extract.app import EchotypesExtractor
 from .registry import Registry
 
 __all__ = [
-    "EcholabelApp",
-    "EchotypesApp",
+    "LabelmeWrapper",
+    "EchotypesExtractor",
     "Registry"
 ]

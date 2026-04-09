@@ -1,3 +1,3 @@
-from .app import EcholabelApp
+from .app import LabelmeWrapper
 
-__all__ = ['EcholabelApp']
+__all__ = ['LabelmeWrapper']

@@ -1,5 +1,5 @@
-from .app import EchotypesApp
+from .app import EchotypesExtractor
 
 __all__ = [
-    "EchotypesApp"
+    "EchotypesExtractor"
 ]

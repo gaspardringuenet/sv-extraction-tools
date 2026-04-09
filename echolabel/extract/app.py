@@ -5,14 +5,13 @@ from pathlib import Path
 from typing import Literal, Optional
 import xarray as xr
 
-from ..paths_validation import _validate_root_path
-
+from ..config import GlobalConfig
 from .layout.main import make_layout
 from .callbacks import *
 
-class EchotypesApp(Dash):
+class EchotypesExtractor(Dash):
 
-    def __init__(self, **kwargs):
+    def __init__(self, global_config: GlobalConfig):
 
         # inherit from the Dash class
         super().__init__(
@@ -22,7 +21,7 @@ class EchotypesApp(Dash):
         )
 
         # create an specific app config object
-        self.app_config = EchotypesAppConfig(**kwargs)
+        self.global_config = global_config
 
         # create cache dictionary (avoids reloading DataArrays all the time)
         self.cache = AppCache()
@@ -31,36 +30,25 @@ class EchotypesApp(Dash):
         self.layout = make_layout()
 
         # define callbacks
-        self._register_callbacks()
+        self.register_callbacks()
 
 
-    def _register_callbacks(self):
+    def register_callbacks(self):
 
         # callbacks for the session control panel (top-left)
-        register_callbacks_session_controls(self, self.app_config.registry, self.app_config.root)
+        register_callbacks_session_controls(self, self.global_config.registry, self.global_config.cache)
 
         # callbacks for the AgGrid (top-right)
-        register_callbacks_selection_table(self, self.app_config.registry, self.app_config.root)
+        register_callbacks_selection_table(self, self.global_config.registry, self.global_config.cache)
 
         # callbacks for the ROI / echo-type visualization row (middle row)
-        register_visualization_callbacks(self, self.app_config.registry, self.app_config.root)
+        register_visualization_callbacks(self, self.global_config.registry, self.global_config.cache)
 
         # callbacks for the clustering
         register_clustering_callbacks(self)
 
         # callbacks for saving the echo-types
-        register_echotypes_saving_callbacks(self, self.app_config.registry, self.app_config.root)
-
-
-class EchotypesAppConfig:
-
-    def __init__(self, root: Path, registry: Path, output_dir: Path = None):
-
-        self.root = _validate_root_path(root)
-        self.registry = registry
-
-        self.output_dir = output_dir or root / "app_data/echotypes"
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+        register_echotypes_saving_callbacks(self, self.global_config.registry, self.global_config.cache)
 
 
 class AppCache:

@@ -1,7 +1,6 @@
 import sqlite3
 
 from pathlib import Path
-import pandas as pd
 from importlib.resources import files
 
 from .echointegrations import EIRegistry
@@ -37,20 +36,21 @@ class Registry:
 
     def get_ei_from_shapes_library(self, library: str) -> int:
         return get_ei_from_shapes_library(self.conn, library)
+
     
-    def get_ei_from_roi(self, roi_id: str) -> int:
-        return get_ei_from_roi(self.conn, roi_id)
+    # def get_ei_from_roi(self, roi_id: str) -> int:
+    #     return get_ei_from_roi(self.conn, roi_id)
     
-    def get_echotype_export_df(self, echotype_libname):
-        sql = """
-            SELECT * FROM echotypes
-            JOIN roi_table AS roi
-            ON roi_id = roi.id
-            WHERE library_name = ?;
-        """
-        cur = self.conn.execute(sql, (echotype_libname,))
-        rows = [dict(row) for row in cur.fetchall()]
-        return pd.DataFrame(rows)
+    # def get_echotype_export_df(self, echotype_libname):
+    #     sql = """
+    #         SELECT * FROM echotypes
+    #         JOIN roi_table AS roi
+    #         ON roi_id = roi.id
+    #         WHERE library_name = ?;
+    #     """
+    #     cur = self.conn.execute(sql, (echotype_libname,))
+    #     rows = [dict(row) for row in cur.fetchall()]
+    #     return pd.DataFrame(rows)
 
 
 
@@ -59,7 +59,7 @@ class Registry:
 
 # Initialize database
 def load_schema() -> str:
-    sql_content = files("sv_extraction.registry").joinpath("sql/schema.sql").read_text()
+    sql_content = files("echolabel.registry").joinpath("sql/schema.sql").read_text()
     return sql_content
     
 
@@ -98,6 +98,10 @@ def get_ei_from_shapes_library(conn: sqlite3.Connection, library: str) -> int:
     cur = conn.execute(sql.EI_FROM_SHAPES_LIB, (library,))
 
     rows = cur.fetchall()
+
+    if not rows:
+        return None
+    
     ids = [dict(row)['id'] for row in rows]
 
     if len(set(ids)) > 1:

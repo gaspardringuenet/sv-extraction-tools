@@ -98,3 +98,28 @@ DELETE_ECHOTYPE = """
     DELETE FROM echotypes
     WHERE id = ?;
 """
+
+COPY_ECHOTYPES_LIB = """
+    INSERT INTO echotypes_libraries (shapes_library_id, name)
+    SELECT shapes_library_id, ?
+    FROM echotypes_libraries
+    WHERE id = ?
+    ON CONFLIC DO NOTHING
+    RETURNING id;
+"""
+
+COPY_ECHOTYPES_ENTRIES = """
+    INSERT INTO echotypes (
+        library_id,
+        shape_id,
+        date_modified,
+        clustering_features,
+        clustering_method,
+        clustering_params,
+        clustering_state,
+        cluster_id
+    )
+    SELECT ?, shape_id, date_modified, clustering_features, clustering_method, clustering_params, clustering_state, cluster_id
+    FROM echotypes
+    WHERE library_id = ?
+"""

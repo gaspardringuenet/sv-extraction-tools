@@ -57,10 +57,6 @@ Examples:
         help="Colormap for echogram images. Either RGB or a matplotlib colormap (default: RGB)"
     )
     label_parser.add_argument(
-        "--registry", type=Path, default=None,
-        help="Path to custom registry file"
-    )
-    label_parser.add_argument(
         "--time_frame_size", type=int, default=5000,
         help="Width of echogram images in number of ping axis units (default: 5000)"
     )
@@ -81,12 +77,12 @@ Examples:
         help="Maximal volume backscattering value for color mapping (in dB) (default: -50)"
     )
     label_parser.add_argument(
-        "--demo", action=argparse.BooleanOptionalAction,
-        help="Download and use demo data"
+        "--demo", action=argparse.BooleanOptionalAction, default=False,
+        help="Download and use demo data (default: False)"
     )
     label_parser.add_argument(
-        "--export_csv", action=argparse.BooleanOptionalAction,
-        help="//TODO NOT IMPLEMENTED. Export shapes library data as a .csv file"
+        "--export_csv", action=argparse.BooleanOptionalAction, default=False,
+        help="//TODO NOT IMPLEMENTED. Export shapes library data as a .csv file (default: False)"
     )
     label_parser.add_argument(
         "--output", type=Path, default=Path(os.getcwd()),
@@ -94,8 +90,8 @@ Examples:
     )
 
     label_parser.add_argument(
-        "--debug", action=argparse.BooleanOptionalAction,
-        help="Print debug level logs"
+        "--debug", action=argparse.BooleanOptionalAction, default=False,
+        help="Print debug level logs (default: False)"
     )
     
 
@@ -103,11 +99,6 @@ Examples:
     extract_parser = subparsers.add_parser(
         name="extract",
         help="Open echotypes extraction app in web browser."
-    )
-
-    extract_parser.add_argument(
-        "--registry", type=Path, default=None,
-        help="Path to custom registry file (defaut: echolabel cache)"
     )
 
     extract_parser.add_argument(
@@ -162,8 +153,7 @@ Examples:
         help="Name of the shapes library to delete"
     )
     delete_shapes_parser.add_argument(
-        "--force", action=argparse.BooleanOptionalAction,
-        default=False,
+        "--force", action=argparse.BooleanOptionalAction, default=False,
         help="Skip confirmation prompt (default: False)"
     )
 
@@ -184,7 +174,13 @@ Examples:
 def validate_and_parse(parser: argparse.ArgumentParser) -> argparse.Namespace:
     args = parser.parse_args()
 
-    if (args.command == "label") and (args.input is None) and (not args.demo):
-        raise ValueError("--input or --demo required for the 'label' command")
+    if args.command == "label":
+        match args.input, args.libname, args.demo:
+            case "label", None, _, False:
+                raise ValueError("--input or --demo required for the 'label' command")
+            case "label", _, None, False:
+                raise ValueError("--libname argument required when specifying --input for the 'label' command")
+            case _:
+                pass
     
     return args

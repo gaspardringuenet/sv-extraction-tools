@@ -6,3 +6,10 @@ EI_FROM_SHAPES_LIB = """
     ON lib.ei_id = ei.id
     WHERE lib.name = ?;
 """
+
+COPY_SHAPES_LIB = """
+    INSERT INTO shapes_libraries (ei_id, name)
+    SELECT ei_id, ?
+    FROM shapes_libraries
+    WHERE name = ?;
+"""

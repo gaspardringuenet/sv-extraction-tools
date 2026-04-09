@@ -475,6 +475,65 @@ wheels = [
 ]
 
 [[package]]
+name = "echolabel"
+version = "0.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "dash" },
+    { name = "dash-ag-grid" },
+    { name = "dask" },
+    { name = "flask" },
+    { name = "labelme" },
+    { name = "matplotlib" },
+    { name = "netcdf4" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "pillow" },
+    { name = "platformdirs" },
+    { name = "plotly" },
+    { name = "requests" },
+    { name = "rich" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "tqdm" },
+    { name = "xarray" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-cov" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "dash" },
+    { name = "dash-ag-grid" },
+    { name = "dask" },
+    { name = "flask" },
+    { name = "labelme", specifier = "==6.0.0" },
+    { name = "matplotlib" },
+    { name = "netcdf4" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "pillow" },
+    { name = "platformdirs", specifier = ">=4.9.4" },
+    { name = "plotly" },
+    { name = "requests" },
+    { name = "rich", specifier = ">=14.3.3" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "tqdm" },
+    { name = "xarray" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=9.0.2" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
+]
+
+[[package]]
 name = "filelock"
 version = "3.25.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1959,65 +2018,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/7b/ae/2d9c981590ed9999a0d91755b47fc74f74de286b0f5cee14c9269041e6c4/soupsieve-2.8.3.tar.gz", hash = "sha256:3267f1eeea4251fb42728b6dfb746edc9acaffc4a45b27e19450b676586e8349", size = 118627, upload-time = "2026-01-20T04:27:02.457Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl", hash = "sha256:ed64f2ba4eebeab06cc4962affce381647455978ffc1e36bb79a545b91f45a95", size = 37016, upload-time = "2026-01-20T04:27:01.012Z" },
-]
-
-[[package]]
-name = "sv-extraction"
-version = "0.0.0"
-source = { editable = "." }
-dependencies = [
-    { name = "dash" },
-    { name = "dash-ag-grid" },
-    { name = "dask" },
-    { name = "flask" },
-    { name = "labelme" },
-    { name = "matplotlib" },
-    { name = "netcdf4" },
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "pillow" },
-    { name = "platformdirs" },
-    { name = "plotly" },
-    { name = "requests" },
-    { name = "rich" },
-    { name = "scikit-learn" },
-    { name = "scipy" },
-    { name = "tqdm" },
-    { name = "xarray" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-    { name = "pytest-cov" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "dash" },
-    { name = "dash-ag-grid" },
-    { name = "dask" },
-    { name = "flask" },
-    { name = "labelme", specifier = "==6.0.0" },
-    { name = "matplotlib" },
-    { name = "netcdf4" },
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "pillow" },
-    { name = "platformdirs", specifier = ">=4.9.4" },
-    { name = "plotly" },
-    { name = "requests" },
-    { name = "rich", specifier = ">=14.3.3" },
-    { name = "scikit-learn" },
-    { name = "scipy" },
-    { name = "tqdm" },
-    { name = "xarray" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest", specifier = ">=9.0.2" },
-    { name = "pytest-cov", specifier = ">=7.1.0" },
 ]
 
 [[package]]

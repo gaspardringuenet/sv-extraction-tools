@@ -1,37 +1,31 @@
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Sequence
 
-from ..paths_validation import _validate_root_path, _validate_input_path, _validate_registry_path
-from ..cache.dir import get_app_cache_dir
-
 # ---- Configuration classes ----
 
-class EcholabelPathsConfig():
+class PathsConfig():
     def __init__(
         self,
         input: Path | str,
-        root: Path | str = None,                    # Path to project root (default = os.getcwd())
-        registry: Path | str = None,
+        cache: Path,
+        registry: Path,
     ):
-        self.root = _validate_root_path(root)
-        self.cache = get_app_cache_dir()
+        #self.root = _validate_root_path(root)
+        self.input = _validate_input_path(input)  
+        self.cache = cache
+        self.registry = registry
         self.images = self.cache / "echogram_images"
 
-        self.input = _validate_input_path(input)  
-        self.registry = _validate_registry_path(registry, self.cache)
+        self.images.mkdir(parents=True, exist_ok=True)
     
     def __repr__(self):
         params = ", ".join([f'{key}={value!r}' for (key, value) in self.__dict__.items()])
-        return "EcholabelPathsConfig(" + params + ")"
+        return "PathsConfig(" + params + ")"
     
     def __str__(self):
         return str(self.__dict__)
-    
-    def make_cache(self):
-        self.cache.mkdir(parents=True, exist_ok=True)
-        self.images.mkdir(parents=True, exist_ok=True)
-
 
 class DataLoadingConfig():
     def __init__(self, chunks: dict):
@@ -83,7 +77,7 @@ class ImageDataConfig():
         return "ImageDataConfig(" + params + ")"
 
 
-class LabellingSessionConfig():
+class SessionConfig():
     """Configuration object for an echogram labelling session.
     """
     def __init__(
@@ -98,16 +92,16 @@ class LabellingSessionConfig():
 
     def __repr__(self):
         params = ", ".join([f'{key}={value!r}' for (key, value) in self.__dict__.items()])
-        return "LabellingSessionConfig(" + params + ")"
+        return "SessionConfig(" + params + ")"
 
 
-class EcholabelAppConfig():
+class LabelConfig():
     def __init__(
         self,
-        paths: EcholabelPathsConfig,
+        paths: PathsConfig,
         loading: DataLoadingConfig,
         image_data: ImageDataConfig,
-        session: LabellingSessionConfig,
+        session: SessionConfig,
     ):
         self.paths = paths
         self.loading = loading
@@ -121,11 +115,28 @@ class EcholabelAppConfig():
 
     def __repr__(self):
         params = "\n".join([f'{key}={value.__repr__()!r}' for (key, value) in self.__dict__.items()])
-        return "EcholabelAppConfig(" + params + "\n)"
+        return "LabelConfig(" + params + "\n)"
 
 
 
 # ---- Helper functions ----
+
+def _validate_input_path(input: str | Path) -> Path:
+
+    input = Path(input)
+
+    # resolve path (rel. to CWD or absolute)
+    if not input.is_absolute():
+        input = Path(os.getcwd()) / input
+
+    # check if path is a file or is not empty
+    if input.is_file():
+        return input
+    if input.is_dir() and os.listdir(str(input)):
+        return input
+    else:
+        raise ValueError(f"Invalid input path - {input}")
+    
 
 # ---- Builder path formatting functions ----
 
