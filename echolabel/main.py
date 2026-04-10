@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Literal
 
 from .config import GlobalConfig
-from .cli import get_CLI_parser, validate_and_parse
-from .demo_data import download_demo_data
+from .utils.cli import get_CLI_parser, validate_and_parse
+from .utils.demo_data import download_demo_data
 
 
 def main() -> None:

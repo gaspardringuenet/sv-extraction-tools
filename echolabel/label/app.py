@@ -13,7 +13,7 @@ from .builder import build_survey_images
 from .config import *
 from ..registry.labelme.parser import add_shape_ids
 from ..registry import Registry
-from ..cache.cleanup import cache_cleanup
+from ..utils.cache import cache_cleanup
 
 logger = logging.getLogger(__name__)
 class LabelmeWrapper:
