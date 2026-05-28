@@ -1,12 +1,13 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "echolabel"
 version = "0.0.0"
 description = "Interactive echogram labelling tools"
-authors = [{name = "Gaspard Ringuenet", email = "gaspard.ringuenet@gmail.com"}]
+readme = "README.md"
+authors = [{name = "Gaspard Ringuenet", email = "gaspard.ringuenet@proton.me"}]
 requires-python = ">=3.11"
 dependencies = [
     "dash",
@@ -29,14 +30,17 @@ dependencies = [
     "rich>=14.3.3",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.1.0",
 ]
 
+[project.scripts]
+echolabel = "echolabel.main:main"
+
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 
 [tool.setuptools.package-data]
 echolabel = [
@@ -45,7 +49,4 @@ echolabel = [
     "*.svg", 
     "*.css"
 ]
-
-[project.scripts]
-echolabel = "echolabel.main:main"
 
