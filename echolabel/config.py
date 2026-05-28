@@ -1,19 +1,21 @@
 import os
 from pathlib import Path
+
 import platformdirs
+
 
 class GlobalConfig:
     """Global application configuration"""
 
     def __init__(
-        self, 
-        name: str = None, 
-        cache_dir: Path = None, 
-        registry: Path = None,
-        output_dir: Path = None,
+        self,
+        name: str = "echolabel",
+        cache_dir: Path | None = None,
+        registry: Path | None = None,
+        output_dir: Path | None = None,
         log_level: str = "INFO"
     ):
-        self.name = name or "echolabel"
+        self.name = name
 
         self.cache = cache_dir or get_cache_dir(self.name)
         self.registry = registry or self.cache / "registry.db"

@@ -19,7 +19,7 @@ def main() -> None:
     if args.cache_dir:
         print(global_config.cache)
         return
-    
+
     # Configure logger
     #level = "DEBUG" if args.debug else "INFO" #TODO implement --debug
     setup_logging(global_config.log_level, global_config.cache)
@@ -76,11 +76,11 @@ def run_label(global_config: GlobalConfig, logger: logging.Logger, args: argpars
 
     # run the labelling app
     logger.info("Running app.")
-    app.run(force_rebuild_images=False)
-
-    # TODO output current shapes library as csv file
-    if args.export_csv:
-        ...
+    app.run(
+        force_rebuild_images=args.force_rebuild_images,
+        export_csv=args.export_csv,
+        output_file=args.output
+    )
 
 
 def run_extract(global_config: GlobalConfig, logger: logging.Logger) -> None:
@@ -98,7 +98,7 @@ def run_copy_lib(
     args: argparse.Namespace,
     logger: logging.Logger
 ) -> None:
-    
+
     info_str = f"Copying {level} libraries {args.source} (new name: {args.destination})."
     if (level == "shapes" and args.include_downstream):
         info_str += " Copying downstream echotypes libraries as well."
@@ -110,12 +110,12 @@ def run_copy_lib(
 
 def run_delete_cache(global_config: GlobalConfig, logger: logging.Logger) -> None:
     import shutil
-    
+
     cache_path = global_config.cache
     logger.info(f"About to delete cache directory: {cache_path}")
-    
+
     response = input(f"Are you sure you want to delete all app cache at {cache_path}?\n[yes/no]: ").strip().lower()
-    
+
     if response == "yes":
         shutil.rmtree(cache_path)
         logger.info("Cache deleted successfully.")

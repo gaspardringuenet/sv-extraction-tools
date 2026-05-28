@@ -13,29 +13,29 @@ class PathsConfig():
         registry: Path,
     ):
         #self.root = _validate_root_path(root)
-        self.input = _validate_input_path(input)  
+        self.input = _validate_input_path(input)
         self.cache = cache
         self.registry = registry
         self.images = self.cache / "echogram_images"
 
         self.images.mkdir(parents=True, exist_ok=True)
-    
+
     def __repr__(self):
         params = ", ".join([f'{key}={value!r}' for (key, value) in self.__dict__.items()])
         return "PathsConfig(" + params + ")"
-    
+
     def __str__(self):
         return str(self.__dict__)
 
 class DataLoadingConfig():
-    def __init__(self, chunks: dict):
+    def __init__(self, chunks: dict[str, int] | None):
         self.chunks = chunks
 
 class ImageDataConfig():
     """Configuration object. Attributes specify echointegrated data and parameters to build
     an image dataset from it.
     """
-    
+
     def __init__(self,
         cruise_name: str,
         ei_id: int,
@@ -48,7 +48,7 @@ class ImageDataConfig():
         echogram_cmap: str,
         echogram_images_dir: Path,
     ):
-        
+
         self.cruise_name = cruise_name
         self.ei_id = ei_id
         self.time_frame_size = time_frame_size
@@ -136,7 +136,7 @@ def _validate_input_path(input: str | Path) -> Path:
         return input
     else:
         raise ValueError(f"Invalid input path - {input}")
-    
+
 
 # ---- Builder path formatting functions ----
 
@@ -166,15 +166,11 @@ def _format_images_dir_path(
     def subfolder() -> str:
         """Subfolder name containing parameters.
         """
-        
-        if isinstance(frequencies, (list, tuple)):      # normalize frequencies to a list
-            freqs = frequencies
-        else:
-            freqs = [frequencies]
-            
-        freqs = [int(f) for f in freqs]                 # convert to int for cleaner name
 
-        return (echogram_cmap + '_' + 
+        # normalize frequencies to a list & convert to int for cleaner name
+        freqs: list[int] = [int(frequencies)] if isinstance(frequencies, (float, int)) else [int(f) for f in frequencies]             #
+
+        return (echogram_cmap + '_' +
                 '_'.join(map(str, freqs)) +'kHz_' +
                 f'TF{time_frame_size}_Z{z_min_idx}-{z_max_idx}_Sv{int(vmin)}-{int(vmax)}dB')
 

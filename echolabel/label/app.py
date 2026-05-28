@@ -1,21 +1,29 @@
 import glob
 import logging
-from pathlib import Path
 import subprocess
+from pathlib import Path
+from typing import Sequence
+
+import xarray
 from rich.console import Console
 from rich.panel import Panel
-from typing import Sequence
-import xarray
 
 from ..config import GlobalConfig
-from .dataloader import load_dataset
-from .builder import build_survey_images
-from .config import *
-from ..registry.labelme.parser import add_shape_ids
 from ..registry import Registry
+from ..registry.labelme.parser import add_shape_ids
 from ..utils.cache import cache_cleanup
+from .builder import build_survey_images
+from .config import (
+    DataLoadingConfig,
+    ImageDataConfig,
+    LabelConfig,
+    PathsConfig,
+    SessionConfig,
+)
+from .dataloader import load_dataset
 
 logger = logging.getLogger(__name__)
+
 class LabelmeWrapper:
     """An app to label multifrequency volume backscattering echograms using Labelme.
 
@@ -43,7 +51,7 @@ class LabelmeWrapper:
         z_max_idx: int = -1,
         vmin: float = -90.,
         vmax: float = -50.,
-        xarray_chunking: dict = None
+        xarray_chunking: dict | None = None
     ):
         """Builds app configuration.
 
@@ -90,14 +98,23 @@ class LabelmeWrapper:
             echogram_cmap=echogram_cmap,
             xarray_chunking=xarray_chunking
         )
-    
-    def run(self, force_rebuild_images: bool=False) -> None:
+
+    def run(
+        self,
+        force_rebuild_images: bool = False,
+        export_csv: bool = False,
+        output_file: Path | None = None
+    ) -> None:
         """Runs the app by printing out echogram images and embedding Labelme.
 
         Parameters
         ----------
         force_rebuild_images : bool, optional
-            whether to print out the echogram images even some already exist for this configuration, by default False
+            print out the echogram images even some already exist for this configuration, by default False
+        export_csv : bool, optional
+            export a csv file with library shapes data, by default False
+        output_file: Path | None, optional
+            path of the export file, by default None
         """
 
         # Load data, register in db and get id
@@ -124,6 +141,9 @@ class LabelmeWrapper:
         # Cleanup of the database and cache files (if EI has no shapes)
         cache_cleanup(self.config.paths.registry, self.config.paths.cache)
 
+        if export_csv:
+            export_library_csv(self.config.paths.registry, self.config.paths.cache, output_file)
+
 
 # ---- Helper functions ---- #
 
@@ -131,14 +151,14 @@ def build_config(
     global_config: GlobalConfig,
     input: str | Path,
     libname: str,
-    time_frame_size: int = 10_000,
-    z_min_idx: int = 0,
-    z_max_idx: int = -1,
-    vmin: float = -90.,
-    vmax: float = -50.,
-    frequencies: float | Sequence[float] = None,
-    echogram_cmap: str = None,
-    xarray_chunking: dict = None
+    time_frame_size: int,
+    z_min_idx: int,
+    z_max_idx: int,
+    vmin: float,
+    vmax: float,
+    frequencies: float | Sequence[float],
+    echogram_cmap: str,
+    xarray_chunking: dict[str, int] | None = None
 ) -> LabelConfig:
     """
     Build labelling app Config object
@@ -148,7 +168,7 @@ def build_config(
 
     # Build data loading config object (use only to store chunking)
     loading_config = DataLoadingConfig(chunks=xarray_chunking)
-    
+
     # Load data, register in db and get id
     dataset = load_dataset(path=paths_config.input, chunks=loading_config.chunks)
     ei_id = get_or_register_ei(paths_config.registry, paths_config.cache, paths_config.input, dataset)
@@ -183,7 +203,7 @@ def build_config(
     return config
 
 
-def get_or_register_ei(registry: Path, cache_dir: Path, input_path: Path, ds: xarray.Dataset):
+def get_or_register_ei(db_path: Path, cache_dir: Path, input_path: Path, ds: xarray.Dataset):
     """Ensures registry schema, registers the echointegration associated to input (file or dir)
     (if it does not already exist in registry) and returns the row id in the echointegrations
     table.
@@ -196,19 +216,19 @@ def get_or_register_ei(registry: Path, cache_dir: Path, input_path: Path, ds: xa
     else:
         raise ValueError(f"Invalid input path - {input_path}")
 
-    with Registry(registry, cache_dir) as registry:
+    with Registry(db_path, cache_dir) as registry:
         ei_id = registry.ei.insert_row(ds, files)
         registry.conn.commit()
     return ei_id
 
 
-def libname_conflict(registry: Path, cache_dir: Path, libname: str, ei_id: int) -> True:
+def libname_conflict(db_path: Path, cache_dir: Path, libname: str, ei_id: int) -> bool:
     """Check if shapes library name is associated to another echointegration
     Enforce that each libname is unique and references only one echointegration.
     """
-    with Registry(registry, cache_dir) as registry:
+    with Registry(db_path, cache_dir) as registry:
         parent_ei_id = registry.get_ei_from_shapes_library(libname)
-    
+
     no_conflict = ((not parent_ei_id) or (parent_ei_id == ei_id))
     conflict = not no_conflict
 
@@ -217,18 +237,18 @@ def libname_conflict(registry: Path, cache_dir: Path, libname: str, ei_id: int) 
                      f"while already associated to echointegration {parent_ei_id}")
     return conflict
 
-        
-def get_or_register_image_dataset(registry_file: Path, cache_dir: Path, img_config: ImageDataConfig):
+
+def get_or_register_image_dataset(db_path: Path, cache_dir: Path, img_config: ImageDataConfig):
     """Registers the image dataset associated to the configuration object (if it does not already
     exist in registry) and returns the row id in the image_datasets table.
     """
-    with Registry(db_path=registry_file, root_path=cache_dir) as reg:
+    with Registry(db_path, cache_dir) as reg:
         id = reg.images.insert_row(img_config)
         reg.conn.commit()
     return id
 
 
-def build_images(dataset: xarray.Dataset, config: LabelConfig, force_rebuild_images: bool):
+def build_images(dataset: xarray.Dataset, config: LabelConfig, force_rebuild_images: bool) -> None:
     """Prints out the echogram as a series of .png images.
     """
     image_files = glob.glob(str(config.image_data.save_dir / "*.png"))
@@ -240,7 +260,7 @@ def build_images(dataset: xarray.Dataset, config: LabelConfig, force_rebuild_ima
         build_survey_images(**config.image_data.__dict__, sv=dataset["Sv"])
 
 
-def sync_library(config: LabelConfig, flow: str):
+def sync_library(config: LabelConfig, flow: str) -> None:
     """Synchronizes the annotatino subfolders for a given library. Allows the user to see the library's
     shapes in labelme, even when changing the image dataset (for the same echointegration).
     """
@@ -251,7 +271,7 @@ def sync_library(config: LabelConfig, flow: str):
         elif flow == 'down':
             registry.shapes.sync_library_down(config.session.image_dataset_id, library=config.session.libname)
         else:
-            raise ValueError(f"flow parameter must be one of 'up' or 'down'. {flow} given.")           
+            raise ValueError(f"flow parameter must be one of 'up' or 'down'. {flow} given.")
 
 
 def run_labelling_session(config: LabelConfig):
@@ -274,7 +294,7 @@ def run_labelling_session(config: LabelConfig):
 
 
     log_file = config.paths.cache / "labelme.log"
-    
+
     with open(log_file, 'w') as log:
         subprocess.run(
             [                                        # launch labelme as subprocess
@@ -305,7 +325,21 @@ def update_registry(config: LabelConfig):
     with Registry(config.paths.registry, config.paths.cache) as registry:
         registry.shapes.sync_db_from_jsons(
             json_dir=config.json_dir(),
-            ei_id=config.image_data.ei_id, 
+            ei_id=config.image_data.ei_id,
             library=config.session.libname
         )
         registry.conn.commit()
+
+
+def export_library_csv(db_path: Path, cache_dir: Path, output_file: Path | None) -> None:
+    logger.info("Exporting .csv file containing registry shapes data")
+
+    if not output_file:
+        raise ValueError("No output file provided for export.")
+
+    # create parent directory
+    output_file.parent.mkdir(exist_ok=True, parents=True)
+
+    logger.info(f"Exporting to {output_file}")
+    with Registry(db_path, cache_dir) as registry:
+        NotImplementedError("db query not implemented.")

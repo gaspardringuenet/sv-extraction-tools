@@ -1,5 +1,5 @@
-import os
 import argparse
+import os
 from pathlib import Path
 
 
@@ -77,23 +77,26 @@ Examples:
         help="Maximal volume backscattering value for color mapping (in dB) (default: -50)"
     )
     label_parser.add_argument(
+        "--force_rebuild_images", action=argparse.BooleanOptionalAction, default=False,
+        help="//TODO NOT IMPLEMENTED. Re-build images dataset even if it already exists in cache. Preserves shapes libraries (default: False)"
+    )
+    label_parser.add_argument(
         "--demo", action=argparse.BooleanOptionalAction, default=False,
         help="Download and use demo data (default: False)"
     )
     label_parser.add_argument(
         "--export_csv", action=argparse.BooleanOptionalAction, default=False,
-        help="//TODO NOT IMPLEMENTED. Export shapes library data as a .csv file (default: False)"
+        help="//TODO NOT IMPLEMENTED. Export shapes library data as a .csv file on session end (default: False)"
     )
     label_parser.add_argument(
-        "--output", type=Path, default=Path(os.getcwd()),
+        "--output", type=Path, default=Path(os.getcwd()) / "exported_shapes.csv",
         help=f"//TODO NOT IMPLEMENTED. Output folder for export (default: {Path(os.getcwd())})"
     )
-
     label_parser.add_argument(
         "--debug", action=argparse.BooleanOptionalAction, default=False,
         help="Print debug level logs (default: False)"
     )
-    
+
 
     # Extract command (launch Dash echotype extraction app)
     extract_parser = subparsers.add_parser(
@@ -106,24 +109,24 @@ Examples:
         help="Print debug level logs"
     )
 
-    
+
     # Copy shapes library command
     copy_shapes_parser = subparsers.add_parser(
         name="copy-shapes-lib",
-        help="Copy a shapes library"
+        help="//TODO NOT IMPLEMENTED. Copy a shapes library"
     )
     copy_shapes_parser.add_argument(
         "source", type=str,
-        help="Name of the source shapes library"
+        help="//TODO NOT IMPLEMENTED. Name of the source shapes library"
     )
     copy_shapes_parser.add_argument(
         "destination", type=str,
-        help="Name of the destination shapes library"
+        help="//TODO NOT IMPLEMENTED. Name of the destination shapes library"
     )
     copy_shapes_parser.add_argument(
         "--include_downstream", action=argparse.BooleanOptionalAction,
         default=False,
-        help="Also copy all echotypes_libraries derived from this shapes_library (default: False)"
+        help="//TODO NOT IMPLEMENTED. Also copy all echotypes_libraries derived from this shapes_library (default: False)"
     )
 
 
@@ -131,30 +134,30 @@ Examples:
     # Copy echotypes library command
     copy_echotypes_parser = subparsers.add_parser(
         name="copy-echotypes-lib",
-        help="Copy an echotypes library"
+        help="//TODO NOT IMPLEMENTED. Copy an echotypes library"
     )
     copy_echotypes_parser.add_argument(
         "source", type=str,
-        help="Name of the source echotypes library"
+        help="//TODO NOT IMPLEMENTED. Name of the source echotypes library"
     )
     copy_echotypes_parser.add_argument(
         "destination", type=str,
-        help="Name of the destination echotypes library"
+        help="//TODO NOT IMPLEMENTED. Name of the destination echotypes library"
     )
 
 
     # Delete shapes library command
     delete_shapes_parser = subparsers.add_parser(
         name="delete-shapes-lib",
-        help="Delete a shapes library and all downstream data"
+        help="//TODO NOT IMPLEMENTED. Delete a shapes library and all downstream data"
     )
     delete_shapes_parser.add_argument(
         "name", type=str,
-        help="Name of the shapes library to delete"
+        help="//TODO NOT IMPLEMENTED. Name of the shapes library to delete"
     )
     delete_shapes_parser.add_argument(
         "--force", action=argparse.BooleanOptionalAction, default=False,
-        help="Skip confirmation prompt (default: False)"
+        help="//TODO NOT IMPLEMENTED. Skip confirmation prompt (default: False)"
     )
 
     # Clean cache command
@@ -182,5 +185,5 @@ def validate_and_parse(parser: argparse.ArgumentParser) -> argparse.Namespace:
                 raise ValueError("--libname argument required when specifying --input for the 'label' command")
             case _:
                 pass
-    
+
     return args
